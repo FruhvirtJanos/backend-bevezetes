@@ -25,14 +25,18 @@ app.use(
 //!Routing
 //?Főoldal:
 router.get('/', (request, response) => {
-    response.sendFile(path.join(__dirname, '../frontend/html/index.html'));
+    response.sendFile(path.join(__dirname, '../frontend/html/akasztofa.html'));
+});
+
+router.get('/szavak', (request, response) => {
+    response.sendFile(path.join(__dirname, '../frontend/html/change.html'));
 });
 
 //*az első paraméterben az url-ben az elérhetőség vagy jelen esetben az url/bruno
-router.get('/bruno', (request, response) => {
-    response.sendFile(path.join(__dirname, '../frontend/html/bruno.html'));
-    //*A sendfile az visszaadja az útvonalban meghatározott fájlt ami jelen esetben a bruno.html
-});
+// router.get('/change', (request, response) => {
+//     response.sendFile(path.join(__dirname, '../frontend/html/change.html'));
+//     //*A sendfile az visszaadja az útvonalban meghatározott fájlt ami jelen esetben a bruno.html
+// });
 
 
 //!API endpoints

@@ -1,0 +1,21 @@
+###
+
+POST http://127.0.0.1:3000/api/akasztofa/tipp
+Content-Type: application/json
+
+{
+    "tipp": "o"
+}
+
+###
+
+GET http://127.0.0.1:3000/api/akasztofa/kezdes
+
+###
+
+POST http://127.0.0.1:3000/api/akasztofa/szotorles
+Content-Type: application/json
+
+{
+    "word": "post"
+}
