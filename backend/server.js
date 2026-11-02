@@ -29,7 +29,7 @@ router.get('/', (request, response) => {
 });
 
 router.get('/szavak', (request, response) => {
-    response.sendFile(path.join(__dirname, '../frontend/html/change.html'));
+    response.sendFile(path.join(__dirname, '../frontend/html/szavak.html'));
 });
 
 //*az első paraméterben az url-ben az elérhetőség vagy jelen esetben az url/bruno

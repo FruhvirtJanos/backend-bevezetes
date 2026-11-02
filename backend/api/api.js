@@ -12,7 +12,7 @@ const storage = multer.diskStorage({
         callback(null, path.join(__dirname, '../uploads'));
     },
     filename: (request, file, callback) => {
-        callback(null, Date.now() + '-' + file.originalname); //?egyedi név: dátum - file eredeti neve
+        callback(null, Date.now() + '-' + file.originalname);
     }
 });
 
@@ -55,18 +55,28 @@ router.post('/data', (request, response) => {
 
 // akasztófa bigyó
 
-const szavak = ["dando", "bigyo", "post", "hosszu szo szokozokkel", "lo", "dando meleg", "még több szó", "krisztián eszik" ]; 
-const szo = szavak[Math.floor(Math.random() * szavak.length)];
+const szavak = ["dando", "bigyo", "post", "hosszu szo szokozokkel", "lo", "dando meleg", "még több szó", "krisztián eszik" ];
+let szo = szavak[Math.floor(Math.random() * szavak.length)];
 let eletekSzama = 9;
-const tippeltKarakterek = [];
+let tippeltKarakterek = [];
 let publicSzo = [];
+let status = "";
+
+const ujJatek = () => {
+    eletekSzama = 9;
+    tippeltKarakterek = [];
+    publicSzo = [];
+    status = "";
+    szo = szavak[Math.floor(Math.random() * szavak.length)];
+
+    szoAtvaltas();
+}
 
 const tippEllenorzes = (tipp) => {
-    
     let valasz = "";
     if (szo.includes(tipp) && !tippeltKarakterek.includes(tipp)) {
+        status = "correct";
         tippeltKarakterek.push(tipp);
-
         for (let i = 0; i < szo.length; i++) {
             if (tipp == szo[i]) {
                 publicSzo[i] = szo[i];
@@ -76,16 +86,18 @@ const tippEllenorzes = (tipp) => {
         valasz = publicSzo;
         
         
-
         if (stringConvert(publicSzo) == szo) {
-            valasz = ["win"];
+            status = "win";            
         }
     }
     else {
-        valasz = ["nincs"];
-        eletekSzama--;
-        if (eletekSzama == 0) {
-            valasz = ['loose'];
+        if (!tippeltKarakterek.includes(tipp)) {
+            tippeltKarakterek.push(tipp);
+            status = "nincs";
+            eletekSzama--;
+            if (eletekSzama == 0) {
+                status = "loose";
+            }
         }
     }
 
@@ -152,6 +164,56 @@ const szoAtvaltas = () => {
 szoAtvaltas();
 console.log(szo, publicSzo);
 
+
+router.get('/akasztofa/kezdes', async (request, response) => {
+    try {
+        response.status(200).json({
+            word: stringConvert(publicSzo),
+            kepek: akasztofaAllas(),
+            hasznalt: tippeltKarakterek
+        });
+    } catch (error) {
+        response.status(500).json({
+            message: 'Ez a végpont nem működik.'
+        });
+    }
+});
+
+router.post('/akasztofa/tipp', (request, response) => {    
+    let tipp = request.body.tipp;
+    let valasz = tippEllenorzes(tipp.toLowerCase());    
+    response.status(200).json({
+        response: stringConvert(valasz),
+        status: status,
+        hasznalt: tippeltKarakterek, 
+        kepek: akasztofaAllas()
+    });
+});
+
+router.post('/akasztofa/ujjatek', (request, response) => {
+    ujJatek();
+
+    response.status(200).json({
+        status: "siker"
+    });
+});
+
+router.post('/akasztofa/szotorles', (request, response) => {    
+    szavak.splice(szavak.indexOf(request.body.word), 1);
+    
+    response.status(200).json({
+        response: szavak
+    });
+});
+
+router.post('/akasztofa/szohozzaadas', (request, response) => {    
+    szavak.push(request.body.word);
+    
+    response.status(200).json({
+        response: szavak
+    });
+});
+
 router.get('/akasztofa/szavak', async (request, response) => {
     try {
         response.status(200).json({
@@ -164,38 +226,6 @@ router.get('/akasztofa/szavak', async (request, response) => {
         });
     }
 });
-
-router.get('/akasztofa/kezdes', async (request, response) => {
-    try {
-        response.status(200).json({
-            word: stringConvert(publicSzo),
-            eletek: akasztofaAllas()
-        });
-    } catch (error) {
-        response.status(500).json({
-            message: 'Ez a végpont nem működik.'
-        });
-    }
-});
-
-router.post('/akasztofa/tipp', (request, response) => {    
-    let valasz = tippEllenorzes(request.body.tipp);
-    
-    response.status(200).json({
-            response: stringConvert(valasz),
-            hasznalt: tippeltKarakterek, 
-            eletek: akasztofaAllas()
-    });
-});
-
-router.post('/akasztofa/szotorles', (request, response) => {    
-    szavak.splice(szavak.indexOf(request.body.word), 1);
-
-    response.status(200).json({
-            response: szavak
-    });
-});
-
 
 
 module.exports = router;

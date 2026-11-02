@@ -1,3 +1,5 @@
+
+
 const getMethod = async (url) => {
     try {
         const response = await fetch(url);
@@ -16,7 +18,7 @@ const postFetch = async (url, data) => {
         const response = await fetch(url, {
             method: 'POST',
             headers: {"Content-Type": "application/json"},
-            data: JSON.stringify(data)
+            body: JSON.stringify(data)
         })
         if (!response.ok) {
             throw new Error("Hiba: " + response.status);
@@ -28,57 +30,54 @@ const postFetch = async (url, data) => {
     }
 }
 
-const listBetoltes = (response) => {
-    const div = document.getElementById("gombokList")
-    div.replaceChildren();
-    for (let i = 0; i < response.response.length; i++) {
-        let szoDiv = document.createElement('div');
-        let szo = document.createElement('h6')
-        szo.textContent = response.response[i];
+const listBetoltes = (tomb) => {                //DESIGN --> GEMINI :)
+    let gombDiv = document.getElementById('gombokList');
+    gombDiv.replaceChildren();
 
-        let torolGomb = document.createElement('input');
-        torolGomb.type = "button";
-        torolGomb.value = "törlés";
-        torolGomb.classList = "btn btn-danger"
-        torolGomb.addEventListener('click', async () =>{
-            gombTavolitas(response.response[i]);
-        });
+    for (let i = 0; i < tomb.length; i++){
+        let card = document.createElement('div');
+        card.classList = "d-flex align-items-center justify-content-between mb-2 p-2 border rounded";
 
-        szoDiv.appendChild(szo);
-        szoDiv.appendChild(torolGomb);
-        div.appendChild(szoDiv);
+        let title = document.createElement('h5');
+        title.className = "mb-0";
+        
+        let torlesGomb = document.createElement('input');
+        torlesGomb.type = 'button';
+        torlesGomb.classList = "btn btn-danger";
+        torlesGomb.value = "Törlés"
+        torlesGomb.addEventListener('click', () => { gombTavolitas(title.innerText) });
+
+        title.textContent = tomb[i];
+        
+        card.appendChild(title);
+        card.appendChild(torlesGomb);
+
+        gombDiv.appendChild(card);
     }
 }
 
 const gombTavolitas = async (szo) => {
-    try{
-        const fetch_response = await postFetch("api/akasztofa/szotorles", {
+    try {
+        const fetchResponse = await postFetch('api/akasztofa/szotorles', {
             word: szo
         });
-        console.log(fetch_response.response);
 
-        const div = document.getElementById("gombokList")
-        div.replaceChildren();
-        for (let i = 0; i < fetch_response.response.length; i++) {
-            let szoDiv = document.createElement('div');
-            let szo = document.createElement('h6')
-            szo.textContent = fetch_response.response[i];
-
-            let torolGomb = document.createElement('input');
-            torolGomb.type = "button";
-            torolGomb.value = "törlés";
-            torolGomb.classList = "btn btn-danger"
-            torolGomb.addEventListener('click', async () =>{
-                gombTavolitas(fetch_response.response[i]);
-            });
-
-            szoDiv.appendChild(szo);
-            szoDiv.appendChild(torolGomb);
-            div.appendChild(szoDiv);
-        }
-
+        listBetoltes(fetchResponse.response);
     }
-    catch(error) {
+    catch (error) {
+        console.log(error);
+    }
+}
+
+const ujSzo = async (szo) => {
+    try {
+        const fetchResponse = await postFetch('api/akasztofa/szohozzaadas', {
+            word: szo
+        });
+        
+        listBetoltes(fetchResponse.response);
+    }
+    catch (error) {
         console.log(error);
     }
 }
@@ -86,8 +85,18 @@ const gombTavolitas = async (szo) => {
 document.addEventListener('DOMContentLoaded', async () => {
     try {
         const response = await getMethod('api/akasztofa/szavak');
+        
+        listBetoltes(response.response);
 
-        listBetoltes(response);
+        document.getElementById('ujSzoButton').addEventListener('click', () => {
+            let szo = document.getElementById('ujSzo').value;
+            if (szo == "") {
+                alert("VALAMIT IRJ BE");
+            }
+            else {
+                ujSzo(szo);
+            }
+        });
     }
     catch(error) {
         console.log(error);
